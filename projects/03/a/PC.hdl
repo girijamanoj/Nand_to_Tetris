@@ -5,10 +5,10 @@
 
 /**
  * A 16-bit counter with load and reset control bits.
- * if      (reset[t] == 1) out[t+1] = 0
- * else if (load[t] == 1)  out[t+1] = in[t]
- * else if (inc[t] == 1)   out[t+1] = out[t] + 1  (integer addition)
- * else                    out[t+1] = out[t]
+ * if      (reset[t]==1) out[t+1] = 0
+ * else if (load[t]==1)  out[t+1] = in[t]
+ * else if (inc[t]==1)   out[t+1] = out[t] + 1  (integer addition)
+ * else                  out[t+1] = out[t]
  */
 
 CHIP PC {
@@ -16,5 +16,15 @@ CHIP PC {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    Inc16(in=output, out=outputplus1);
+
+    Mux16(sel=inc, a=output, b=outputplus1, out=incrd);
+    Mux16(sel=load, a=incrd, b=in, out=loaded);
+    Mux16(sel=reset, a=loaded, b=false, out=reseted);
+
+    // It kind of bothers me that we're reloading the register
+    // every time even when we don't need to, but this solution
+    // was simpler
+    Register(load=true, in=reseted, out=out, out=output);
+
 }
